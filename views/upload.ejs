@@ -1,6 +1,9 @@
 <%- include('layouts/layout') %>
 <div class="container">
   <h1 class="text-center">File Upload</h1>
+  <div class="alert">
+    <p><%= typeof msg != 'undefined' ? msg : '' %></p>
+  </div>
   <div class="row">
     <div class="col-10 col-lg-6 mx-auto">
       <form

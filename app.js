@@ -3,14 +3,31 @@ const ejs = require("ejs");
 const mysql = require("mysql");
 const multer = require("multer");
 const path = require("path");
+const bodyParser = require("body-parser");
 
 const app = express();
+
+const storage = multer.diskStorage({
+  destination: "./public/uploads",
+  filename: function(req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+    );
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10000000 }
+}).single("myVideo");
 
 //setting the ejs view engine
 app.set("view engine", "ejs");
 // set the static folder
 app.use(express.static(path.join(__dirname, "public")));
 // database setup and connection
+app.use(bodyParser.urlencoded({ extended: false }));
 let db = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -32,6 +49,21 @@ app.get("/", (req, res) => {
 
 app.get("/upload", (req, res) => {
   res.render("upload");
+});
+
+app.post("/upload", (req, res) => {
+  upload(req, res, err => {
+    if (err) {
+      res.render("upload", {
+        msg: err
+      });
+    } else {
+      const title = req.body.title;
+      console.log(req.file);
+      console.log(title);
+      res.send("its working");
+    }
+  });
 });
 
 const port = process.env.PORT || 3000;
