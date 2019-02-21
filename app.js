@@ -19,8 +19,24 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10000000 }
+  limits: { fileSize: 10000000 },
+  fileFilter: function(req, file, cb) {
+    checkFileType(file, cb);
+  }
 }).single("myVideo");
+
+function checkFileType(file, cb) {
+  const fileTypes = /mp4|avi/;
+
+  const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+
+  const mimetype = fileTypes.test(file.mimetype);
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb("Error: videos only");
+  }
+}
 
 //setting the ejs view engine
 app.set("view engine", "ejs");
@@ -44,7 +60,14 @@ db.connect(err => {
 });
 
 app.get("/", (req, res) => {
-  res.render("index");
+  let sql = "SELECT * FROM uploads";
+  db.query(sql, (err, files) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.render("index", { files });
+    }
+  });
 });
 
 app.get("/upload", (req, res) => {
@@ -58,10 +81,30 @@ app.post("/upload", (req, res) => {
         msg: err
       });
     } else {
-      const title = req.body.title;
-      console.log(req.file);
-      console.log(title);
-      res.send("its working");
+      if (req.file == undefined) {
+        res.render("upload", {
+          msg: "Error: no file selected"
+        });
+      } else {
+        const title = req.body.title;
+        let { filename, path } = req.file;
+        const post = {
+          title: title,
+          filename: filename,
+          filepath: path
+        };
+        let sql = "INSERT INTO uploads SET ?";
+        let query = db.query(sql, post, (err, result) => {
+          if (err) {
+            res.render("upload", {
+              msg: err
+            });
+          } else {
+            console.log(result);
+            res.send("video uploaded successfully");
+          }
+        });
+      }
     }
   });
 });
