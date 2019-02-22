@@ -4,7 +4,7 @@
   <div class="row">
     <% files.forEach(function(file){ %>
     <div class="col-10 col-md-4 col-lg-3 my-3">
-      <div class="card media p-0 mx-auto">
+   <a href="/watch/<%=file.id%>"><div class="card media p-0 mx-auto">
         <video
           src="./uploads/<%=file.filename %>" class="layer" type="video/mp4"
         />
@@ -12,7 +12,7 @@
         <div class="card-footer">
           <h4><%=file.title %></h4>
         </div>
-      </div>
+      </div></a>
     </div>
     <% }) %>
   </div>

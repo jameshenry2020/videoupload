@@ -101,10 +101,23 @@ app.post("/upload", (req, res) => {
             });
           } else {
             console.log(result);
-            res.send("video uploaded successfully");
+            res.render("index", { msg: "video uploaded successfully" });
           }
         });
       }
+    }
+  });
+});
+app.get("/watch/:video_id", (req, res) => {
+  const id = req.params.video_id;
+  let sql = `SELECT * FROM uploads WHERE id = ${id}`;
+  let query = db.query(sql, (err, file) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.render("video", {
+        file
+      });
     }
   });
 });
